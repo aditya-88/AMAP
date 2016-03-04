@@ -39,7 +39,7 @@
  For any suggestions/queries please contact:                                                                                 
  Aditya Singh                                                                                                                
  Ph.D. Scholar                                                                                                               
- Advanced Paediatrics Center                                                                                                 
+ Advanced Paediatric Center                                                                                                 
  Post Graduate Institute of Medical Education and Research                                                                   
  Chandigarh, India                                                                                                           
  adityas@live.in                                                                                                             
