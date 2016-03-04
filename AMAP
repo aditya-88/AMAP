@@ -1,0 +1,148 @@
+#!/usr/bin/env python3.4
+__author__ = 'aditya'
+from Bio import SeqIO
+import os
+import os.path
+from Bio.Align.Applications import ClustalwCommandline
+from Bio import AlignIO
+import sys
+import distutils.spawn
+#   Setting Up  #
+version = 0.09
+citation = "Singh, A., & Bhatia, P., (2016). Automated Mutation Analysis Pipeline (AMAP): a tool for rapidly analyzing Sanger sequencing data with minimum user interference.\nManuscript under publication."
+#   EDIT THESE VALUES TO MATCH YOUR INSTALLATION    #
+# Also, if execution fails, edit the first line to match with your Python version.
+seqtk = "/Users/aditya/softwares/seqtk/seqtk"
+seaview = "/Applications/seaview.app/Contents/MacOS/seaview"
+
+#   DO NOT EDIT ANYTHING BELOW THIS LINE    #
+
+##################################################################################################################################
+## Typical usage                                                                                                                ##
+## AMAP Forward_seq.ab1 Reverse_seq.ab1 Reference_seq.fasta                                                                     ##
+## For multiplex usage for n number of samples:                                                                                 ##
+## Example:                                                                                                                     ##
+## n = 2; That is, Sample A and B.                                                                                              ##
+## Typical Usage for such a scenario:                                                                                          ##
+## AMAP Forward_seq_Sample_A.ab1 Forward_seq_Sample_B.ab1 Reverse_seq_Sample_A.ab1 Reverse_seq_Sample_B.ab1 Reference_Seq.fasta ##
+## Reverse Sequence should not be reverse complemented, the software does it on it's own.                                       ##
+## Kindly note that SeaView will not be automatically launched in case of multiplex run.                                        ##
+## You can manually open the *._result.aln file to visualize the alignment.                                                     ##
+## Requirements:                                                                                                                ##
+## Linux/Unix System with EMBOSS, SEQTK, Python 3.x, BioPython & CLUSTALW2 installed.                                           ##
+## Made and tested on Mac OS X 10.11.3 with Pyhton 3.4, BioPython 1.66, EMBOSS 6.5.7, SEQTK, CLUSTALW2 2.1                      ##
+##                                                                                                                              ##
+## Optional:                                                                                                                    ##
+## Make the code executable using "chmod +x AMAP" and copy it to your system's PATH for easy invoking it from any folder.       ##
+##                                                                                                                              ##
+## You can download these freely available softwares from the below given links:                                                ##
+## EMBOSS    : http://emboss.sourceforge.net/download/                                                                          ##
+## SEQTK     : https://github.com/lh3/seqtk                                                                                     ##
+## BioPython : http://biopython.org/wiki/Main_Page                                                                              ##
+## SeaView   : http://doua.prabi.fr/software/seaview                                                                            ##
+##                                                                                                                              ##
+## Description of results:                                                                                                      ##
+## *._Forward_Sequence_QC.fastq             : QC Trimmed Forward Sequence in FASTQ format.                                      ##
+## *._Reverse_Sequence_QC.fastq             : QC Trimmed Reverse complemented reverse sequence in FASTQ format.                 ##
+## *._consensus.fasta                       : Consensus sequence in FASTA format.                                               ##
+## *._result.aln                            : Alignemnet of consensus with reference sequecne in ALN format.                    ##
+## *._result.dnd                            : Guide tree file for alignment in DND format.                                      ##
+## *._result.fasta_report.txt               : CLustalW2 alignment report.                                                       ##
+##                                                                                                                              ##
+## Thanks for using the program!                                                                                                ##
+## For any suggestions/queries please contact:                                                                                  ##
+## Aditya Singh                                                                                                                 ##
+## Ph.D. Scholar                                                                                                                ##
+## Advanced Paediatrics Center                                                                                                  ##
+## Post Graduate Institute of Medical Education and Research                                                                    ##
+## Chandigarh, India                                                                                                            ##
+## adityas@live.in                                                                                                              ##
+##################################################################################################################################
+
+#   Check system and command    #
+
+if len(sys.argv) >= 4:
+    print("\nCommand arguments seems correct.")
+else:
+    print("Check your command...\nTypical usage:\nAMAP Forward_Seq.ab1 Reverse_Seq.ab1 Reference_Seq.fasta")
+    exit()
+if os.path.isfile(seqtk):
+    print("SEQTK seems intstalled!")
+else:
+    print("SEQTK was not found!\nPlease make sure it's installed and location updated at the top of this file.")
+    print("System Check: FAIL!")
+    exit()
+if os.path.isfile(seaview):
+    print("SeaView seems intstalled!")
+else:
+    print("SeaView was not found!\nPlease make sure it's installed and location updated at the top of this file.")
+    print("System Check: FAIL!")
+    exit()
+if 'Bio' in sys.modules:
+    print("BioPython seems installed!")
+else:
+    print("Biopython is not installed! Please install the same and make sure the executables are available in your PATH")
+    print("System Check: FAIL!")
+    exit()
+if distutils.spawn.find_executable('merger') is not None:
+    print("EMBOSS seems installed.")
+else:
+    print("EMBOSS does not seems to be install. Install it and make sure it is available in System PATH")
+    print("System Check: FAIL!")
+    exit()
+if distutils.spawn.find_executable('clustalw2') is not None:
+    print("CLUSTALW2 seems installed.")
+else:
+    print("CLUSTALW2 does not seems to be install. Install it and make sure it is available in System PATH")
+    print("System Check: FAIL!")
+    exit()
+print("\nSystem check: PASS\nWelcome to Automated Mutation Analysis Pipeline (AMAP) version {} by Aditya Singh\nadityas@live.in\n".format(version))
+
+#_______________Multiplexing
+all_sequences = sys.argv[1:-1]
+number_of_sequences = int(len(all_sequences))
+half = int(number_of_sequences/2)
+forward_sequences = all_sequences[:half]
+reference = sys.argv[-1]
+reverse_sequences = all_sequences[half:]
+count = 0
+reference_seq = sys.argv[-1]
+
+#   WORKING #
+while (count <= half-1):
+    Forward_seq = open(forward_sequences[count], "rb")
+    Reverse_seq = open(reverse_sequences[count], "rb")
+    forward_file = open(Forward_seq.name[:-4]+"_Forward_Sequence.fastq", 'w+b')
+    reverse_file_not_rev = open(Forward_seq.name[:-4]+"_Reverse_Sequence_Not_Reversed.fastq", 'w+b')
+    reverse_file = open(Forward_seq.name[:-4]+"_Reverse_Sequence.fastq", 'w+b')
+    Forward_fastq = SeqIO.convert(Forward_seq, "abi",forward_file.name, "fastq" )
+    Reverse_fastq = SeqIO.convert(Reverse_seq, "abi",reverse_file_not_rev.name, "fastq" )
+    os.system(seqtk+" seq -r "+reverse_file_not_rev.name+" > "+reverse_file.name)
+    print("Performing Quality control and building consensus sequence....")
+    os.system(seqtk+" trimfq "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
+    os.system(seqtk+" trimfq "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
+    os.system("merger "+"-verbose "+ "-asequence "+forward_file.name[:-6] + "_QC.fastq"+" -bsequence "+reverse_file.name[:-6] + "_QC.fastq"+" -outfile "+reverse_file.name[:-23]+"_consensus_alignment.aln "+"-outseq "+reverse_file.name[:-23]+"_consensus.fasta")
+    count = count+1
+    print("Performing Alignment with reference sequence....")
+    os.system("cat "+reference_seq+" "+reverse_file.name[:-23]+"_consensus.fasta "+"> "+reverse_file.name[:-23]+"_result.fasta")
+    in_file = reverse_file.name[:-23]+"_result.fasta"
+    print("Chosen file:\n",in_file)
+    clustalw_cline = ClustalwCommandline("clustalw2", infile=in_file)
+    print("Running program....\n",clustalw_cline)
+    os.system(str(clustalw_cline)+">"+in_file+"_report.txt")
+    alignment = AlignIO.read(in_file[:-6]+".aln", "clustal")
+
+#   Renaming and Purging of unimportant files    #
+    os.system("rm "+reverse_file.name[:-23]+"_consensus_alignment.aln "+Forward_seq.name[:-4]+"_Reverse_Sequence_Not_Reversed.fastq "+forward_file.name+" "+reverse_file.name+" "+reverse_file.name[:-23]+"_result.fasta")
+    if len(sys.argv) >=5:
+        seaview_run =""
+    else:
+        seaview_run = seaview+" "+in_file[:-6]+".aln"
+    os.system(seaview_run)
+forward_file.close()
+reverse_file.close()
+reverse_file_not_rev.close()
+Forward_seq.close()
+Reverse_seq.close()
+#   End message #
+print("\n\nThank you for using AMAP version {0}!\nHope it was useful to you!\n\nIf you use AMAP in your work, please cite:\n\n{1}".format(version,citation))
