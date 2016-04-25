@@ -8,7 +8,7 @@ from Bio import AlignIO
 import sys
 import distutils.spawn
 #   Setting Up  #
-version = 0.09
+version = 0.11
 citation = "Singh, A., & Bhatia, P., (2016). Automated Mutation Analysis Pipeline (AMAP): a tool for rapidly analyzing Sanger sequencing data with minimum user interference.\nManuscript under publication."
 #   EDIT THESE VALUES TO MATCH YOUR INSTALLATION    #
 # Also, if execution fails, edit the first line to match with your Python version.
@@ -23,7 +23,7 @@ seaview = "/Applications/seaview.app/Contents/MacOS/seaview"
 ## For multiplex usage for n number of samples:                                                                                 ##
 ## Example:                                                                                                                     ##
 ## n = 2; That is, Sample A and B.                                                                                              ##
-## Typical Usage for such a scenario:                                                                                          ##
+## Typical Usage for such a sceneario:                                                                                          ##
 ## AMAP Forward_seq_Sample_A.ab1 Forward_seq_Sample_B.ab1 Reverse_seq_Sample_A.ab1 Reverse_seq_Sample_B.ab1 Reference_Seq.fasta ##
 ## Reverse Sequence should not be reverse complemented, the software does it on it's own.                                       ##
 ## Kindly note that SeaView will not be automatically launched in case of multiplex run.                                        ##
@@ -119,8 +119,8 @@ while (count <= half-1):
     Reverse_fastq = SeqIO.convert(Reverse_seq, "abi",reverse_file_not_rev.name, "fastq" )
     os.system(seqtk+" seq -r "+reverse_file_not_rev.name+" > "+reverse_file.name)
     print("Performing Quality control and building consensus sequence....")
-    os.system(seqtk+" trimfq "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
-    os.system(seqtk+" trimfq "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
+    os.system(seqtk+" trimfq -q 0.01 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
+    os.system(seqtk+" trimfq -q 0.01 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
     os.system("merger "+"-verbose "+ "-asequence "+forward_file.name[:-6] + "_QC.fastq"+" -bsequence "+reverse_file.name[:-6] + "_QC.fastq"+" -outfile "+reverse_file.name[:-23]+"_consensus_alignment.aln "+"-outseq "+reverse_file.name[:-23]+"_consensus.fasta")
     count = count+1
     print("Performing Alignment with reference sequence....")
