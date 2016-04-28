@@ -1,14 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.4
 __author__ = 'aditya'
-from Bio import SeqIO
-import os
-import os.path
-from Bio.Align.Applications import ClustalwCommandline
-from Bio import AlignIO
 import sys
+import os
 import distutils.spawn
+check = 0
 #   Setting Up  #
-version = 0.11
+version = 0.12
+print("\nWelcome to AMAP version {}!\n".format(version))
 citation = "Singh, A., & Bhatia, P., (2016). Automated Mutation Analysis Pipeline (AMAP): a tool for rapidly analyzing Sanger sequencing data with minimum user interference.\nManuscript under publication."
 #   EDIT THESE VALUES TO MATCH YOUR INSTALLATION    #
 # Also, if execution fails, edit the first line to match with your Python version.
@@ -56,48 +54,52 @@ seaview = "/Applications/seaview.app/Contents/MacOS/seaview"
 ## Advanced Paediatrics Center                                                                                                  ##
 ## Post Graduate Institute of Medical Education and Research                                                                    ##
 ## Chandigarh, India                                                                                                            ##
-## adityas@live.in                                                                                                              ##
+## aditya.onco@gmail.com; adityas@live.in                                                                                                              ##
 ##################################################################################################################################
 
 #   Check system and command    #
-
-if len(sys.argv) >= 4:
-    print("\nCommand arguments seems correct.")
-else:
-    print("Check your command...\nTypical usage:\nAMAP Forward_Seq.ab1 Reverse_Seq.ab1 Reference_Seq.fasta")
-    exit()
+print("\nChecking system for installation of required programs.\nTotal 6 tests to perform.")
 if os.path.isfile(seqtk):
-    print("SEQTK seems intstalled!")
+    print("\nSEQTK seems installed!")
 else:
-    print("SEQTK was not found!\nPlease make sure it's installed and location updated at the top of this file.")
-    print("System Check: FAIL!")
-    exit()
+    print("\nSEQTK was not found!\nPlease make sure it's installed and location updated at the top of this file.")
+    check=+1
 if os.path.isfile(seaview):
-    print("SeaView seems intstalled!")
+    print("SeaView seems installed!")
 else:
     print("SeaView was not found!\nPlease make sure it's installed and location updated at the top of this file.")
-    print("System Check: FAIL!")
-    exit()
-if 'Bio' in sys.modules:
+    check=+1
+try:
+    from Bio import SeqIO
     print("BioPython seems installed!")
-else:
+except ImportError as e:
     print("Biopython is not installed! Please install the same and make sure the executables are available in your PATH")
-    print("System Check: FAIL!")
-    exit()
+    check=+1
 if distutils.spawn.find_executable('merger') is not None:
     print("EMBOSS seems installed.")
 else:
     print("EMBOSS does not seems to be install. Install it and make sure it is available in System PATH")
-    print("System Check: FAIL!")
-    exit()
+    check=+1
 if distutils.spawn.find_executable('clustalw2') is not None:
     print("CLUSTALW2 seems installed.")
 else:
     print("CLUSTALW2 does not seems to be install. Install it and make sure it is available in System PATH")
-    print("System Check: FAIL!")
+    check=+1
+if len(sys.argv) >= 4:
+    print("Command arguments seems correct.")
+else:
+    print("Check your command...\nTypical usage:\nAMAP Forward_Seq.ab1 Reverse_Seq.ab1 Reference_Seq.fasta")
+    check=+1
+if check > 0:
+    print("\n{} out of 6 system tests failed. Please check the above mentioned errors and try again.\nThank you!".format(check))
     exit()
-print("\nSystem check: PASS\nWelcome to Automated Mutation Analysis Pipeline (AMAP) version {} by Aditya Singh\nadityas@live.in\n".format(version))
-
+else:
+    pass
+print("\nSystem check: PASS\nWelcome to Automated Mutation Analysis Pipeline (AMAP) version {} by Aditya Singh\naditya.onco@gmail.com\n".format(version))
+## Importing requirements
+import os.path
+from Bio.Align.Applications import ClustalwCommandline
+from Bio import AlignIO
 #_______________Multiplexing
 all_sequences = sys.argv[1:-1]
 number_of_sequences = int(len(all_sequences))
@@ -139,6 +141,7 @@ while (count <= half-1):
     else:
         seaview_run = seaview+" "+in_file[:-6]+".aln"
     os.system(seaview_run)
+print("Clearing up memory")
 forward_file.close()
 reverse_file.close()
 reverse_file_not_rev.close()
