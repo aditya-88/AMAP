@@ -1,11 +1,11 @@
-#!/usr/bin/env python3.4
+#!/usr/bin/env python3
 __author__ = 'aditya'
 import sys
 import os
 import distutils.spawn
 check = 0
 #   Setting Up  #
-version = 0.12
+version = "0.14"
 print("\nWelcome to AMAP version {}!\n".format(version))
 citation = "Singh, A., & Bhatia, P., (2016). Automated Mutation Analysis Pipeline (AMAP): a tool for rapidly analyzing Sanger sequencing data with minimum user interference.\nManuscript under publication."
 #   EDIT THESE VALUES TO MATCH YOUR INSTALLATION    #
@@ -28,7 +28,7 @@ seaview = "/Applications/seaview.app/Contents/MacOS/seaview"
 ## You can manually open the *._result.aln file to visualize the alignment.                                                     ##
 ## Requirements:                                                                                                                ##
 ## Linux/Unix System with EMBOSS, SEQTK, Python 3.x, BioPython & CLUSTALW2 installed.                                           ##
-## Made and tested on Mac OS X 10.11.3 with Pyhton 3.4, BioPython 1.66, EMBOSS 6.5.7, SEQTK, CLUSTALW2 2.1                      ##
+## Made and tested on Mac OS X 10.11.4 with Pyhton 3.4, BioPython 1.66, EMBOSS 6.5.7, SEQTK, CLUSTALW2 2.1                      ##
 ##                                                                                                                              ##
 ## Optional:                                                                                                                    ##
 ## Make the code executable using "chmod +x AMAP" and copy it to your system's PATH for easy invoking it from any folder.       ##
@@ -54,41 +54,41 @@ seaview = "/Applications/seaview.app/Contents/MacOS/seaview"
 ## Advanced Paediatrics Center                                                                                                  ##
 ## Post Graduate Institute of Medical Education and Research                                                                    ##
 ## Chandigarh, India                                                                                                            ##
-## aditya.onco@gmail.com; adityas@live.in                                                                                                              ##
+## aditya.onco@gmail.com; adityas@live.in                                                                                       ##
 ##################################################################################################################################
 
 #   Check system and command    #
-print("\nChecking system for installation of required programs.\nTotal 6 tests to perform.")
+print("\nChecking system for installation of required programs and the commandline arguments.\nTotal 6 tests to perform.")
 if os.path.isfile(seqtk):
-    print("\nSEQTK seems installed!")
+    print("\n1. SEQTK seems installed!\t\tPASS")
 else:
-    print("\nSEQTK was not found!\nPlease make sure it's installed and location updated at the top of this file.")
+    print("\n1. SEQTK was not found!\nPlease make sure it's installed and location updated at the top of this file.\t\tFAIL")
     check=+1
 if os.path.isfile(seaview):
-    print("SeaView seems installed!")
+    print("2. SeaView seems installed!\t\tPASS")
 else:
-    print("SeaView was not found!\nPlease make sure it's installed and location updated at the top of this file.")
+    print("2. SeaView was not found!\nPlease make sure it's installed and location updated at the top of this file.\t\tFAIL")
     check=+1
 try:
     from Bio import SeqIO
-    print("BioPython seems installed!")
+    print("3. BioPython seems installed!\t\tPASS")
 except ImportError as e:
-    print("Biopython is not installed! Please install the same and make sure the executables are available in your PATH")
+    print("3. Biopython is not installed! Please install the same and make sure the executables are available in your PATH\t\tFAIL")
     check=+1
 if distutils.spawn.find_executable('merger') is not None:
-    print("EMBOSS seems installed.")
+    print("4. EMBOSS seems installed.\t\tPASS")
 else:
-    print("EMBOSS does not seems to be install. Install it and make sure it is available in System PATH")
+    print("4. EMBOSS does not seems to be install. Install it and make sure it is available in System PATH\t\tFAIL")
     check=+1
 if distutils.spawn.find_executable('clustalw2') is not None:
-    print("CLUSTALW2 seems installed.")
+    print("5. CLUSTALW2 seems installed.\t\tPASS")
 else:
-    print("CLUSTALW2 does not seems to be install. Install it and make sure it is available in System PATH")
+    print("5. CLUSTALW2 does not seems to be install. Install it and make sure it is available in System PATH\t\tFAIL")
     check=+1
 if len(sys.argv) >= 4:
-    print("Command arguments seems correct.")
+    print("6. Command arguments seems correct.\tPASS")
 else:
-    print("Check your command...\nTypical usage:\nAMAP Forward_Seq.ab1 Reverse_Seq.ab1 Reference_Seq.fasta")
+    print("6. Command Error!\t\t\tFAIL\nCheck your command...\nTypical usage:\nAMAP Forward_Seq.ab1 Reverse_Seq.ab1 Reference_Seq.fasta")
     check=+1
 if check > 0:
     print("\n{} out of 6 system tests failed. Please check the above mentioned errors and try again.\nThank you!".format(check))
@@ -105,15 +105,23 @@ all_sequences = sys.argv[1:-1]
 number_of_sequences = int(len(all_sequences))
 half = int(number_of_sequences/2)
 forward_sequences = all_sequences[:half]
-reference = sys.argv[-1]
+#reference = sys.argv[-1]
 reverse_sequences = all_sequences[half:]
 count = 0
 reference_seq = sys.argv[-1]
 
 #   WORKING #
 while (count <= half-1):
-    Forward_seq = open(forward_sequences[count], "rb")
-    Reverse_seq = open(reverse_sequences[count], "rb")
+    try:
+        Forward_seq = open(forward_sequences[count], "rb")
+    except FileNotFoundError:
+        print("\nCheck the file address.\n'{}' : File not found.\nProgram will exit now.\nResults might be incomplete.\nPlease verify the file addresses and try again.".format(forward_sequences[count]))
+        exit()
+    try:
+        Reverse_seq = open(reverse_sequences[count], "rb")
+    except FileNotFoundError:
+        print("\nCheck the file address.\n'{}' : File not found. Program will exit now.\nResults might be incomplete.\nPlease verify the file addresses and try again.".format(reverse_sequences[count]))
+        exit()
     forward_file = open(Forward_seq.name[:-4]+"_Forward_Sequence.fastq", 'w+b')
     reverse_file_not_rev = open(Forward_seq.name[:-4]+"_Reverse_Sequence_Not_Reversed.fastq", 'w+b')
     reverse_file = open(Forward_seq.name[:-4]+"_Reverse_Sequence.fastq", 'w+b')
@@ -138,14 +146,9 @@ while (count <= half-1):
     os.system("rm "+reverse_file.name[:-23]+"_consensus_alignment.aln "+Forward_seq.name[:-4]+"_Reverse_Sequence_Not_Reversed.fastq "+forward_file.name+" "+reverse_file.name+" "+reverse_file.name[:-23]+"_result.fasta")
     if len(sys.argv) >=5:
         seaview_run =""
+        print("\nMultiplexed usage. SeaView was not auto-launched.")
     else:
         seaview_run = seaview+" "+in_file[:-6]+".aln"
     os.system(seaview_run)
-print("Clearing up memory")
-forward_file.close()
-reverse_file.close()
-reverse_file_not_rev.close()
-Forward_seq.close()
-Reverse_seq.close()
 #   End message #
 print("\n\nThank you for using AMAP version {0}!\nHope it was useful to you!\n\nIf you use AMAP in your work, please cite:\n\n{1}".format(version,citation))
