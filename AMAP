@@ -7,8 +7,6 @@ import distutils.spawn
 import multiprocessing
 import re
 threads = multiprocessing.cpu_count()
-#blast_record = ""
-#from Bio.Blast import NCBIXML
 check = 0
 #   Setting Up  #
 version = "0.24"
