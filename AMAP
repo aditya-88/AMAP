@@ -9,7 +9,7 @@ import re
 threads = multiprocessing.cpu_count()
 check = 0
 #   Setting Up  #
-version = "0.24"
+version = "0.26"
 print("\nWelcome to AMAP version {}!\n".format(version))
 citation = "Singh, A., & Bhatia, P., (2016). Automated Mutation Analysis Pipeline (AMAP): a tool for rapidly analyzing Sanger sequencing data with minimum user interference.\nManuscript under publication."
 #   EDIT THESE VALUES TO MATCH YOUR INSTALLATION    #
@@ -151,8 +151,8 @@ if mode.upper() == "FR":
         Reverse_fastq = SeqIO.convert(Reverse_seq, "abi",reverse_file_not_rev.name, "fastq" )
         os.system(seqtk+" seq -r "+reverse_file_not_rev.name+" > "+reverse_file.name)
         print("Performing Quality control and building consensus sequence....")
-        os.system(seqtk+" trimfq -q 0.01 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
-        os.system(seqtk+" trimfq -q 0.01 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
+        os.system(seqtk+" trimfq -q 0.0005 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
+        os.system(seqtk+" trimfq -q 0.0005 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
         os.system("merger "+"-verbose "+ "-asequence "+forward_file.name[:-6] + "_QC.fastq"+" -bsequence "+reverse_file.name[:-6] + "_QC.fastq"+" -outfile "+reverse_file.name[:-23]+"_consensus_alignment.aln "+"-outseq "+reverse_file.name[:-23]+"_consensus.fasta")
         count = count+1
         size = os.stat(reverse_file.name[:-23]+"_consensus.fasta")
@@ -209,8 +209,8 @@ elif mode.upper() == "FRE":
         Reverse_fastq = SeqIO.convert(Reverse_seq, "abi",reverse_file_not_rev.name, "fastq" )
         os.system(seqtk+" seq -r "+reverse_file_not_rev.name+" > "+reverse_file.name)
         print("Performing Quality control and building consensus sequence....")
-        os.system(seqtk+" trimfq -q 0.01 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
-        os.system(seqtk+" trimfq -q 0.01 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
+        os.system(seqtk+" trimfq -q 0.0005 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
+        os.system(seqtk+" trimfq -q 0.0005 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
         os.system("merger "+"-verbose "+ "-asequence "+forward_file.name[:-6] + "_QC.fastq"+" -bsequence "+reverse_file.name[:-6] + "_QC.fastq"+" -outfile "+reverse_file.name[:-23]+"_consensus_alignment.aln "+"-outseq "+reverse_file.name[:-23]+"_consensus.fasta")
         count = count+1
         size = os.stat(reverse_file.name[:-23]+"_consensus.fasta")
@@ -281,7 +281,7 @@ elif mode.upper() == "F":
         forward_file = open(Forward_seq.name[:-4]+"_Forward_Sequence.fastq", 'w+b')
         Forward_fastq = SeqIO.convert(Forward_seq, "abi",forward_file.name, "fastq" )
         print("Performing Quality control....")
-        os.system(seqtk+" trimfq -q 0.01 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
+        os.system(seqtk+" trimfq -q 0.0005 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
         os.system(seqtk +" seq -a "+forward_file.name[:-6] + "_QC.fastq >"+forward_file.name[:-23]+"_consensus.fasta")
         count = count+1
         print("Performing Alignment with reference sequence....")
@@ -318,7 +318,7 @@ elif mode.upper() == "FE":
         forward_file = open(Forward_seq.name[:-4]+"_Forward_Sequence.fastq", 'w+b')
         Forward_fastq = SeqIO.convert(Forward_seq, "abi",forward_file.name, "fastq" )
         print("Performing Quality control....")
-        os.system(seqtk+" trimfq -q 0.01 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
+        os.system(seqtk+" trimfq -q 0.0005 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
         os.system(seqtk +" seq -a "+forward_file.name[:-6] + "_QC.fastq >"+forward_file.name[:-23]+"_consensus.fasta")
         count = count+1
         size = os.stat(forward_file.name[:-23]+"_consensus.fasta")
@@ -389,7 +389,7 @@ elif mode.upper() == "R":
         Reverse_fastq = SeqIO.convert(Reverse_seq, "abi",reverse_file_not_rev.name, "fastq" )
         os.system(seqtk+" seq -r "+reverse_file_not_rev.name+" > "+reverse_file.name)
         print("Performing Quality control and building consensus sequence....")
-        os.system(seqtk+" trimfq -q 0.01 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
+        os.system(seqtk+" trimfq -q 0.0005 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
         os.system(seqtk+" seq -a "+reverse_file.name[:-6] + "_QC.fastq >"+reverse_file.name[:-23]+"_consensus.fasta")
         count = count+1
         print("Performing Alignment with reference sequence....")
@@ -430,7 +430,7 @@ elif mode.upper() == "RE":
         Reverse_fastq = SeqIO.convert(Reverse_seq, "abi",reverse_file_not_rev.name, "fastq" )
         os.system(seqtk+" seq -r "+reverse_file_not_rev.name+" > "+reverse_file.name)
         print("Performing Quality control and building consensus sequence....")
-        os.system(seqtk+" trimfq -q 0.01 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
+        os.system(seqtk+" trimfq -q 0.0005 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
         os.system(seqtk+" seq -a "+reverse_file.name[:-6] + "_QC.fastq >"+reverse_file.name[:-23]+"_consensus.fasta")
         count = count+1
         size = os.stat(reverse_file.name[:-23]+"_consensus.fasta")
@@ -487,6 +487,5 @@ elif mode.upper() == "RE":
 else:
     print("'{}' is not a valid mode argument.\nMake sure you gave the mode argument correct (F/FE/FR/FRE/R/RE)\nPlease try Again".format(mode))
     exit()
-os.system("rm "+reverse_file.name[:-23]+"*.dnd ")
 #   End message #
 print("\n\nThank you for using AMAP version {0}!\nHope it was useful to you!\n\nIf you use AMAP in your work, please cite:\n\n{1}".format(version,citation))
