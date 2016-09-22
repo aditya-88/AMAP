@@ -27,7 +27,8 @@ EMBOSS       : http://emboss.sourceforge.net/download/
 SEQTK        : https://github.com/lh3/seqtk                                                                                 
 BioPython    : http://biopython.org/wiki/Main_Page                                                                          
 SeaView      : http://doua.prabi.fr/software/seaview                                                                        
-NCBI BLAST+  : ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/                                                  
+NCBI BLAST+  : ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ 
+EasyGUI (required for installer only) : http://easygui.sourceforge.net
                                                                                                                             
 Description of results:                                                                                                     
 *._Forward_Sequence_QC.fastq             : QC Trimmed Forward Sequence in FASTQ format.                                     
@@ -36,7 +37,8 @@ Description of results:
 *._result.aln                            : Alignemnet of consensus with reference sequecne in ALN format.                   
 *._result.fasta_report.txt               : CLustalW2 alignment report.                                                      
 *.consensus_BLAST.txt                    : Simplified BLAST result between Exonic sequence and extracted exon.              
-*.EXON_*                                 : Files related with Exon extraction.                                              
+*.EXON_*                                 : Files related with Exon extraction.
+Failed_Result.txt                        : List of sequences failing quality tests.  
                                                                                                                             
 Thanks for using the program!                                                                                               
 For any suggestions/queries please contact:                                                                                 
