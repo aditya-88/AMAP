@@ -6,15 +6,26 @@ import os.path
 import distutils.spawn
 import multiprocessing
 import re
+from pathlib import Path
 threads = multiprocessing.cpu_count()
 check = 0
+try:
+    report_file_location = Path(sys.argv[2]).parent
+except IndexError as e:
+    print("No system arguments supplied! Please check and try again.\nExiting now.")
+    exit()
+report_file = open(str(report_file_location)+"/Failed_Report.txt", "a")
+#print(sys.argv[2],report_file_location, report_file)
+report_file.write("List of failed Sequencing runs.\nNumber\tSequence name\n")
 #   Setting Up  #
-version = "0.26"
-print("\nWelcome to AMAP version {}!\n".format(version))
+version = "0.28"
+print("Welcome to AMAP version {}!\n".format(version))
 citation = "Singh, A., & Bhatia, P., (2016). Automated Mutation Analysis Pipeline (AMAP): a tool for rapidly analyzing Sanger sequencing data with minimum user interference.\nManuscript under publication."
 #   EDIT THESE VALUES TO MATCH YOUR INSTALLATION    #
 # Also, if execution fails, edit the first line to match with your Python version.
+#SEQTK
 seqtk = "/Users/aditya/softwares/seqtk/seqtk"
+#SeaView
 seaview = "/Applications/seaview.app/Contents/MacOS/seaview"
 
 #   DO NOT EDIT ANYTHING BELOW THIS LINE    #
@@ -156,7 +167,7 @@ if mode.upper() == "FR":
         os.system("merger "+"-verbose "+ "-asequence "+forward_file.name[:-6] + "_QC.fastq"+" -bsequence "+reverse_file.name[:-6] + "_QC.fastq"+" -outfile "+reverse_file.name[:-23]+"_consensus_alignment.aln "+"-outseq "+reverse_file.name[:-23]+"_consensus.fasta")
         count = count+1
         size = os.stat(reverse_file.name[:-23]+"_consensus.fasta")
-        if size.st_size > 50:
+        if size.st_size > 100:
             print("Performing Alignment with reference sequence....")
             os.system("cat "+reference_seq+" "+reverse_file.name[:-23]+"_consensus.fasta "+"> "+reverse_file.name[:-23]+"_result.fasta")
             in_file = reverse_file.name[:-23]+"_result.fasta"
@@ -172,7 +183,8 @@ if mode.upper() == "FR":
                 seaview_run = seaview+" "+in_file[:-6]+".aln"
             os.system(seaview_run)
         else:
-            print("\n\nA very shot consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1")
 #   Renaming and Purging of unimportant files    #
         os.system("rm "+reverse_file.name[:-23]+"_consensus_alignment.aln "+Forward_seq.name[:-4]+"_Reverse_Sequence_Not_Reversed.fastq "+forward_file.name+" "+reverse_file.name+" ")
 
@@ -214,7 +226,7 @@ elif mode.upper() == "FRE":
         os.system("merger "+"-verbose "+ "-asequence "+forward_file.name[:-6] + "_QC.fastq"+" -bsequence "+reverse_file.name[:-6] + "_QC.fastq"+" -outfile "+reverse_file.name[:-23]+"_consensus_alignment.aln "+"-outseq "+reverse_file.name[:-23]+"_consensus.fasta")
         count = count+1
         size = os.stat(reverse_file.name[:-23]+"_consensus.fasta")
-        if size.st_size > 50:
+        if size.st_size > 100:
             #print(os.stat(reverse_file.name[:-23]+"_consensus.fasta".st_size))
             os.system("blastn -query "+reverse_file.name[:-23]+"_consensus.fasta -db "+exons+"_DB -out "+reverse_file.name[:-23]+"_consensus_BLAST.xml -max_hsps 1 -num_alignments 1 -outfmt 5 -num_threads "+str(threads))
             result = open(reverse_file.name[:-23]+"_consensus_BLAST.xml", "r")
@@ -263,7 +275,8 @@ elif mode.upper() == "FRE":
                 seaview_run = seaview+" "+in_file[:-6]+".aln"
             os.system(seaview_run)
         else:
-            print("\n\nA very shot consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1")
         #   Renaming and Purging of unimportant files    #
             os.system("rm "+reverse_file.name[:-23]+"_consensus_alignment.aln "+Forward_seq.name[:-4]+"_Reverse_Sequence_Not_Reversed.fastq "+forward_file.name+" "+reverse_file.name+" ")
 elif mode.upper() == "F":
@@ -284,20 +297,25 @@ elif mode.upper() == "F":
         os.system(seqtk+" trimfq -q 0.0005 "+forward_file.name+" > "+forward_file.name[:-6] + "_QC.fastq")
         os.system(seqtk +" seq -a "+forward_file.name[:-6] + "_QC.fastq >"+forward_file.name[:-23]+"_consensus.fasta")
         count = count+1
-        print("Performing Alignment with reference sequence....")
-        os.system("cat "+reference_seq+" "+forward_file.name[:-23]+"_consensus.fasta "+"> "+forward_file.name[:-23]+"_result.fasta")
-        in_file = forward_file.name[:-23]+"_result.fasta"
-        print("Chosen file:\n",in_file)
-        clustalw_cline = ClustalwCommandline("clustalw2", infile=in_file)
-        print("Running program....\n",clustalw_cline)
-        os.system(str(clustalw_cline)+">"+in_file+"_report.txt")
-        alignment = AlignIO.read(in_file[:-6]+".aln", "clustal")
-        if len(forward_sequences)>=2:
-            seaview_run =""
-            print("\nMultiplexed usage. SeaView was not auto-launched.")
+        size = os.stat(forward_file.name[:-23]+"_consensus.fasta")
+        if size.st_size > 100:
+            print("Performing Alignment with reference sequence....")
+            os.system("cat "+reference_seq+" "+forward_file.name[:-23]+"_consensus.fasta "+"> "+forward_file.name[:-23]+"_result.fasta")
+            in_file = forward_file.name[:-23]+"_result.fasta"
+            print("Chosen file:\n",in_file)
+            clustalw_cline = ClustalwCommandline("clustalw2", infile=in_file)
+            print("Running program....\n",clustalw_cline)
+            os.system(str(clustalw_cline)+">"+in_file+"_report.txt")
+            alignment = AlignIO.read(in_file[:-6]+".aln", "clustal")
+            if len(forward_sequences)>=2:
+                seaview_run =""
+                print("\nMultiplexed usage. SeaView was not auto-launched.")
+            else:
+                seaview_run = seaview+" "+in_file[:-6]+".aln"
+            os.system(seaview_run)
         else:
-            seaview_run = seaview+" "+in_file[:-6]+".aln"
-        os.system(seaview_run)
+            print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            report_file.write(str(count)+"\t"+forward_file.name[:-23]+".ab1"+".ab1")
 # EXON Extraction___________________________________________
 elif mode.upper() == "FE":
     all_sequences = sys.argv[2:-3]
@@ -322,7 +340,7 @@ elif mode.upper() == "FE":
         os.system(seqtk +" seq -a "+forward_file.name[:-6] + "_QC.fastq >"+forward_file.name[:-23]+"_consensus.fasta")
         count = count+1
         size = os.stat(forward_file.name[:-23]+"_consensus.fasta")
-        if size.st_size > 50:
+        if size.st_size > 100:
             os.system("blastn -query "+forward_file.name[:-23]+"_consensus.fasta -db "+exons+"_DB -out "+forward_file.name[:-23]+"_consensus_BLAST.xml -max_hsps 1 -num_alignments 1 -outfmt 5 -num_threads "+str(threads))
             result = open(forward_file.name[:-23]+"_consensus_BLAST.xml", "r")
             outfile = open(forward_file.name[:-23]+"_consensus_BLAST.txt", "w")
@@ -371,7 +389,8 @@ elif mode.upper() == "FE":
                 seaview_run = seaview+" "+in_file[:-6]+".aln"
             os.system(seaview_run)
         else:
-            print("\n\nA very shot consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            report_file.write(str(count)+"\t"+forward_file.name[:-23]+".ab1")
 elif mode.upper() == "R":
     print("Running in Reverse ONLY mode per sample (Only Reverse sequence per sample)\n")
     reverse_sequences = all_sequences
@@ -392,20 +411,25 @@ elif mode.upper() == "R":
         os.system(seqtk+" trimfq -q 0.0005 "+reverse_file.name+" > "+reverse_file.name[:-6] + "_QC.fastq")
         os.system(seqtk+" seq -a "+reverse_file.name[:-6] + "_QC.fastq >"+reverse_file.name[:-23]+"_consensus.fasta")
         count = count+1
-        print("Performing Alignment with reference sequence....")
-        os.system("cat "+reference_seq+" "+reverse_file.name[:-23]+"_consensus.fasta "+"> "+reverse_file.name[:-23]+"_result.fasta")
-        in_file = reverse_file.name[:-23]+"_result.fasta"
-        print("Chosen file:\n",in_file)
-        clustalw_cline = ClustalwCommandline("clustalw2", infile=in_file)
-        print("Running program....\n",clustalw_cline)
-        os.system(str(clustalw_cline)+">"+in_file+"_report.txt")
-        alignment = AlignIO.read(in_file[:-6]+".aln", "clustal")
-        if len(reverse_sequences) >=2:
-            seaview_run =""
-            print("\nMultiplexed usage. SeaView was not auto-launched.")
+        size = os.stat(reverse_file.name[:-23]+"_consensus.fasta")
+        if size.st_size > 100:
+            print("Performing Alignment with reference sequence....")
+            os.system("cat "+reference_seq+" "+reverse_file.name[:-23]+"_consensus.fasta "+"> "+reverse_file.name[:-23]+"_result.fasta")
+            in_file = reverse_file.name[:-23]+"_result.fasta"
+            print("Chosen file:\n",in_file)
+            clustalw_cline = ClustalwCommandline("clustalw2", infile=in_file)
+            print("Running program....\n",clustalw_cline)
+            os.system(str(clustalw_cline)+">"+in_file+"_report.txt")
+            alignment = AlignIO.read(in_file[:-6]+".aln", "clustal")
+            if len(reverse_sequences) >=2:
+                seaview_run =""
+                print("\nMultiplexed usage. SeaView was not auto-launched.")
+            else:
+                seaview_run = seaview+" "+in_file[:-6]+".aln"
+            os.system(seaview_run)
         else:
-            seaview_run = seaview+" "+in_file[:-6]+".aln"
-        os.system(seaview_run)
+            print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1")
 
 # EXON Extraction___________________________________________
 
@@ -434,7 +458,7 @@ elif mode.upper() == "RE":
         os.system(seqtk+" seq -a "+reverse_file.name[:-6] + "_QC.fastq >"+reverse_file.name[:-23]+"_consensus.fasta")
         count = count+1
         size = os.stat(reverse_file.name[:-23]+"_consensus.fasta")
-        if size.st_size > 50:
+        if size.st_size > 100:
             os.system("blastn -query "+reverse_file.name[:-23]+"_consensus.fasta -db "+exons+"_DB -out "+reverse_file.name[:-23]+"_consensus_BLAST.xml -max_hsps 1 -num_alignments 1 -outfmt 5 -num_threads "+str(threads))
             result = open(reverse_file.name[:-23]+"_consensus_BLAST.xml", "r")
             outfile = open(reverse_file.name[:-23]+"_consensus_BLAST.txt", "w")
@@ -483,9 +507,10 @@ elif mode.upper() == "RE":
                 seaview_run = seaview+" "+in_file[:-6]+".aln"
             os.system(seaview_run)
         else:
-            print("\n\nA very shot consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
+            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1")
 else:
     print("'{}' is not a valid mode argument.\nMake sure you gave the mode argument correct (F/FE/FR/FRE/R/RE)\nPlease try Again".format(mode))
     exit()
 #   End message #
-print("\n\nThank you for using AMAP version {0}!\nHope it was useful to you!\n\nIf you use AMAP in your work, please cite:\n\n{1}".format(version,citation))
+print("Thank you for using AMAP version {0}!\nHope it was useful to you!\n\nIf you use AMAP in your work, please cite:\n\n{1}".format(version,citation))
