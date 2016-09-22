@@ -70,6 +70,7 @@ seaview = "/Applications/seaview.app/Contents/MacOS/seaview"
 ## *._result.fasta_report.txt               : CLustalW2 alignment report.                                                       ##
 ## *.consensus_BLAST.txt                    : Simplified BLAST result between Exonic sequence and extracted exon.               ##
 ## *.EXON_*                                 : Files related with Exon extraction.                                               ##
+## Failed_Result.txt                        : List of sequences failing quality tests.                                          ##
 ##                                                                                                                              ##
 ## Thanks for using the program!                                                                                                ##
 ## For any suggestions/queries please contact:                                                                                  ##
