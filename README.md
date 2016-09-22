@@ -27,7 +27,8 @@ EMBOSS       : http://emboss.sourceforge.net/download/
 SEQTK        : https://github.com/lh3/seqtk                                                                                 
 BioPython    : http://biopython.org/wiki/Main_Page                                                                          
 SeaView      : http://doua.prabi.fr/software/seaview                                                                        
-NCBI BLAST+  : ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ 
+NCBI BLAST+  : ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
+
 EasyGUI (required for installer only) : http://easygui.sourceforge.net
                                                                                                                             
 Description of results:                                                                                                     
