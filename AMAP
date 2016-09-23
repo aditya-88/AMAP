@@ -9,14 +9,6 @@ import re
 from pathlib import Path
 threads = multiprocessing.cpu_count()
 check = 0
-try:
-    report_file_location = Path(sys.argv[2]).parent
-except IndexError as e:
-    print("No system arguments supplied! Please check and try again.\nExiting now.")
-    exit()
-report_file = open(str(report_file_location)+"/Failed_Report.txt", "a")
-#print(sys.argv[2],report_file_location, report_file)
-report_file.write("List of failed Sequencing runs.\nNumber\tSequence name\n")
 #   Setting Up  #
 version = "0.28"
 print("Welcome to AMAP version {}!\n".format(version))
@@ -127,6 +119,9 @@ if check > 0:
 else:
     pass
 print("\nSystem check: PASS\nWelcome to Automated Mutation Analysis Pipeline (AMAP) version {0} by Aditya Singh\naditya.onco@gmail.com.\nWill utilize all {1} available threads of the system for NCBI BLAST.".format(version, threads))
+report_file_location = Path(sys.argv[2]).parent
+report_file = open(str(report_file_location)+"/Failed_Report.txt", "a")
+report_file.write("List of failed Sequencing runs:\nNumber\tSequence name\n")
 ## Importing requirements
 import os.path
 from Bio.Align.Applications import ClustalwCommandline
@@ -185,7 +180,7 @@ if mode.upper() == "FR":
             os.system(seaview_run)
         else:
             print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
-            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1")
+            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1\n")
 #   Renaming and Purging of unimportant files    #
         os.system("rm "+reverse_file.name[:-23]+"_consensus_alignment.aln "+Forward_seq.name[:-4]+"_Reverse_Sequence_Not_Reversed.fastq "+forward_file.name+" "+reverse_file.name+" ")
 
@@ -277,7 +272,7 @@ elif mode.upper() == "FRE":
             os.system(seaview_run)
         else:
             print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
-            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1")
+            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1\n")
         #   Renaming and Purging of unimportant files    #
             os.system("rm "+reverse_file.name[:-23]+"_consensus_alignment.aln "+Forward_seq.name[:-4]+"_Reverse_Sequence_Not_Reversed.fastq "+forward_file.name+" "+reverse_file.name+" ")
 elif mode.upper() == "F":
@@ -430,7 +425,7 @@ elif mode.upper() == "R":
             os.system(seaview_run)
         else:
             print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
-            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1")
+            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1\n")
 
 # EXON Extraction___________________________________________
 
@@ -509,7 +504,7 @@ elif mode.upper() == "RE":
             os.system(seaview_run)
         else:
             print("\n\nA very short consensus sequence of {} bytes made. Not using it. Check sequence quality.\n\n".format(size.st_size))
-            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1")
+            report_file.write(str(count)+"\t"+reverse_file.name[:-23]+".ab1\n")
 else:
     print("'{}' is not a valid mode argument.\nMake sure you gave the mode argument correct (F/FE/FR/FRE/R/RE)\nPlease try Again".format(mode))
     exit()
